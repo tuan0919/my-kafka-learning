@@ -78,6 +78,7 @@ Bởi vì Kafka cũng là hệ thống phân tán, nó có thể có nhiều **K
 
 ### Topic
 Topic định nghĩa danh mục cho các message hoặc dán nhãn cho các message và từ đó, Consumer có thể nhận được các message liên quan đến Topic mà mình đã đăng ký lắng nghe.
+
 Xem xét lại ví dụ PayTM trước đó:
 
 ![image](images/Screenshot%202024-08-11%20183821.png)
@@ -98,3 +99,19 @@ Xem xét lại ví dụ PayTM trước đó:
 - Chúng ta có thể xem Topic giống như là các bảng trong database của Kafka Server, với mỗi message, Kafka sẽ kiểm tra xem nên thêm message đó vào bảng nào trong database.
 
 ![images](images/Screenshot%202024-08-11%20185355.png)
+
+### Partitions
+
+Chúng ta đã biết PayTM sẽ sản sinh ra rất nhiều message đến Broker và Broker có thể lưu các message nào theo từng Topic.
+
+Giả sử lúc này đây, chúng ta có số lượng **cực lớn** các message, lên đến hàng triệu. Lúc này đây topic là không đủ để handle các message.
+
+Việc lưu các message trở nên bất khả thi trên một máy chủ. Do kafka là một hệ thốntg máy chủ phân tán, thế nên chúng ta có thể **chia nhỏ** các Topic thành nhiều phần, và phân tán mỗi phần sang một máy chủ khác.
+
+Các phần topic được gọi là các **Partitions**
+
+![image](images/Screenshot%202024-08-11%20190745.png)
+
+Với việc có nhiều Partiton cho mỗi Topic, mỗi khi publisher gửi một lượng lớn message cho một topic nhất định, thì mỗi Partition trong topic chỉ việc lưu một phần message, giúp cải thiện đáng kể hiệu năng.
+
+Và kể cả khi có một partition bị down, miễn là các partition khác còn hoạt động thì cả kênh giao tiếp sẽ không bị gián đoạn.
