@@ -115,3 +115,27 @@ Các phần topic được gọi là các **Partitions**
 Với việc có nhiều Partiton cho mỗi Topic, mỗi khi publisher gửi một lượng lớn message cho một topic nhất định, thì mỗi Partition trong topic chỉ việc lưu một phần message, giúp cải thiện đáng kể hiệu năng.
 
 Và kể cả khi có một partition bị down, miễn là các partition khác còn hoạt động thì cả kênh giao tiếp sẽ không bị gián đoạn.
+
+### Offset
+
+Đến giờ chúng ta đã nắm được:
+
+- Mỗi kafka cluster sẽ có nhiều kafka server.
+- Mỗi kafka server sẽ có nhiều kafka topic.
+- Mỗi Kafka topic sẽ có nhiều partions.
+
+Mỗi khi producer gửi message đến, message này sẽ nằm bên trong **bất kì partition nào** của một topic nhất định.
+
+Chúng ta sẽ không kiểm soát quá trình này, quá trình này hoạt động dựa trên quy tắc xoay vòng. Mỗi khi một message được đặt vào một partion, nó sẽ được gắn một số để định danh vị trí được gọi là **offset**. Các số này là một dãy liên tục tăng.
+
+Vai trò của **offset** là sẽ giúp chúng ta biết được **message nào đã được consume** bởi consumer.
+
+![image](images/Screenshot%202024-08-11%20192024.png)
+
+Lấy ví dụ: 
+
+>- Giả sử trong quá trình hoạt động, Consumer đã consume được đến message có offset 3 thì bỗng dưng Consumer vì lí do gì đó lại offline.
+>- Trong quá trình offline, có thêm 2 message offset 4 và 5 được gửi đến.
+>![image](images/Screenshot%202024-08-11%20192248.png)
+>- Khi consumer online trở lại, số offset 3 sẽ giúp Broker biết được nên gửi tiếp message offset 4 và 5 cho consumer.
+>![image](images/Screenshot%202024-08-11%20192634.png)
