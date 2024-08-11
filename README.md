@@ -151,7 +151,35 @@ Với kiến trúc hiện tại, mỗi một consumer phải lắng nghe **tất
 ![image](images/Screenshot%202024-08-11%20195230.png)
 
 Giải quyết vấn đề này, chúng ta sẽ **chia nhỏ workload**, cụ thể là:
-- Định nghĩa n instance của consumer.
+
+- Xác định n instance consumer.
 - Nhóm toàn bộ consumer này vào một đơn vị khác có tên *payment_consumer_group*.
 - Với nhiều consumer, chúng ta có thể chia workload cho mỗi consumer để có được hiệu suất throughput tốt hơn.
 ![image](images/Screenshot%202024-08-11%20195542.png)
+>- Với cách tiếp cận này, cả 3 consumer sẽ chỉ cần lắng nghe một partition.
+
+_**Lưu ý:** Chúng ta không thể đảm bảo thứ tự của consumer và partion, bất kì consumer nào cũng có thể lắng nghe đến bất kì partiton nào. Việc này sẽ được quyết định bởi Coordinator_
+
+Chúng ta đã có 3 consumer lắng nghe đến 3 partion khác nhau, vậy trong trường hợp có consumer thứ 4?
+
+![image](images/Screenshot%202024-08-11%20200154.png)
+
+**Không thay đổi!** Consumer thứ 4 sẽ idle bởi vì tất cả các partion đều đã được lắng nghe và không còn partiton nào cho Consumer này. Nhưng trong trường hợp có bất kì Consumer nào reject hoặc offline, thì Consumer thứ 4 sẽ có cơ hội connect.
+
+Khái niệm này được gọi là **Consumer Rebalancing**.
+
+### Zookeeper (cũ)
+Zookeeper là điều kiện tiên quyết của Kafka, Kafka là hệ thống phân tán và nó sử dụng Zookeeper để quản lí metadata bao gồm topic, partiton, offset, vv... và theo dõi tình trạng của một Kafka Server.
+
+![image](images/Screenshot%202024-08-11%20203359.png)
+
+Hay nói một cách đơn giản dễ hiểu, Zookeeper sẽ là một người quản lí Kafka Cluster của chúng ta.
+
+Apache Kafka đã chuyển từ việc phụ thuộc vào Zookeeper sang một kiến trúc mới gọi là **KRaft** (Kafka Raft Metadata Mode), nhưng Zookeeper vẫn được sử dụng trong nhiều cài đặt Kafka hiện tại.
+
+### KRaft (mới)
+Kể từ Apache Kafka phiên bản 2.8 trở đi, chúng ta có thể sử dụng Kafka mà không cần đến **ZooKeeper**. 
+
+Trước đây chúng ta phải lưu giữ metadata của Kafka Cluster bên trong ZooKeeper, mà giờ đây chúng ta có thể lưu trữ các metadata này bên trong chính Kafka Topic Partition.
+
+Để sử dụng Kafka mà không cần ZooKeeper, chúng ta sẽ chạy Kafka ở **KRaft mode**.
