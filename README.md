@@ -139,3 +139,19 @@ Lấy ví dụ:
 >![image](images/Screenshot%202024-08-11%20192248.png)
 >- Khi consumer online trở lại, số offset 3 sẽ giúp Broker biết được nên gửi tiếp message offset 4 và 5 cho consumer.
 >![image](images/Screenshot%202024-08-11%20192634.png)
+
+### Consumer Groups
+Đến hiện tại chúng ta đã rõ các khái niệm này:
+1. Producer sẽ push một lượng lớn các message vào một **Topic**.
+2. Các Message lại được chia nhỏ vào nhiều **Partition** khác nhau của một **Topic**.
+3. Bên trong mỗi **Partiton**, các message sẽ có được đánh dấu một số **Offset**.
+
+Với kiến trúc hiện tại, mỗi một consumer phải lắng nghe **tất cả partition** để đảm bảo lấy được message cần thiết. Điều này là không tối ưu vì không có tính tuần tự.
+
+![image](images/Screenshot%202024-08-11%20195230.png)
+
+Giải quyết vấn đề này, chúng ta sẽ **chia nhỏ workload**, cụ thể là:
+- Định nghĩa n instance của consumer.
+- Nhóm toàn bộ consumer này vào một đơn vị khác có tên *payment_consumer_group*.
+- Với nhiều consumer, chúng ta có thể chia workload cho mỗi consumer để có được hiệu suất throughput tốt hơn.
+![image](images/Screenshot%202024-08-11%20195542.png)
