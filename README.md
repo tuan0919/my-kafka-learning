@@ -54,4 +54,47 @@ Xem xét sơ đồ:
 - Mỗi service giờ đây sẽ không quan tâm đến data format, chúng chỉ đơn giản là gửi dữ liệu tập trung đến Kafka server.
 - Server đích cần loại data nào, sẽ chủ động lấy từ Kafka ra.
 - Số lượng connection giảm đi, giờ đây chỉ còn **9 connection**.
+
 ### How does Kafka work (high level overview)
+### Khái quát đơn gản về mô hình Pub/Sub
+Bao gồm 3 phần:
+1. Publisher
+2. Subsciber
+3. Message Broker
+- **Publisher** là bên sẽ "phát hành" event hoặc message đến hệ thống Kafka.
+- Message sẽ đc gửi đi rồi lưu trữ tại **Message Broker** hay nói cách khác là **Kafka Server**.
+- **Subsribers** sẽ đi đến các **Message Broker** cụ thể và yêu cầu Message, hoặc các Subsribers cơ bản sẽ **lắng nghe** các broker để lấy message.
+
+![image](images/image.png)
+
+## Kafka Architecture & Components
+### Cluster
+Cluster là một khái niệm quen thuộc trong thế giới Microservice, chúng là một cụm các máy chủ. Trong định nghĩa của Kafka cũng tương tự.
+Bởi vì Kafka cũng là hệ thống phân tán, nó có thể có nhiều **Kafka server** hay **Broker** trong một **Kafka Cluster**
+>- Có thể có một hoặc nhiều broker trong một Kafka cluster.
+>- Cluster giúp đảm bảo khả năng chịu lỗi, khả năng mở rộng và hiệu suất cao trong việc xử lý một lượng lớn dữ liệu event.
+
+![image](images/Screenshot%202024-08-11%20182401.png)
+
+### Topic
+Topic định nghĩa danh mục cho các message hoặc dán nhãn cho các message và từ đó, Consumer có thể nhận được các message liên quan đến Topic mà mình đã đăng ký lắng nghe.
+Xem xét lại ví dụ PayTM trước đó:
+
+![image](images/Screenshot%202024-08-11%20183821.png)
+
+- **Consumer** - *client application* yêu cầu Kafka gửi tất cả message (các transaction) cho mình.
+- **Broker** - *Kafka* gửi toàn bộ message bên trong đến cho application, dẫn đến có nhiều message không liên quan.
+
+![image](images/Screenshot%202024-08-11%20184112.png)
+
+- **Consumer** - *client application* thay vào đó, yêu cầu gửi tất cả message payment liên quan cho mình.
+- **Broker** - *Kafka* lại tiếp tục confuse vì có nhiều loại message bên trong nó, và không biết làm sao để lọc ra các message liên quan đến payment.
+
+=> lúc này chúng ta cần đến **Topic**.
+
+![image](images/Screenshot%202024-08-11%20185012.png)
+
+- Với **Topic**, Broker có thể phân nhóm các message theo từng Topic khác nhau, và **Consumer** giờ đây chỉ cần lắng nghe một Topic cụ thể để nhận message liên quan
+- Chúng ta có thể xem Topic giống như là các bảng trong database của Kafka Server, với mỗi message, Kafka sẽ kiểm tra xem nên thêm message đó vào bảng nào trong database.
+
+![images](images/Screenshot%202024-08-11%20185355.png)
