@@ -213,6 +213,22 @@ Trước đây chúng ta phải lưu giữ metadata của Kafka Cluster bên tro
 
 Trong Section này sẽ sử dụng các phiên bản phân phối cho **Linux Ubuntu**.
 
+### Cài đặt CLI
+
+#### Apache Kafka
+
+Link cài đặt: [kafka_2.13-3.8.0.tgz](https://downloads.apache.org/kafka/3.8.0/kafka_2.13-3.8.0.tgz)
+
+Sau khi tải về, chuyển vào thư mục chứa file và tiến hành giải nén bằng lệnh `tar`. Nhớ cấp quyền `execute` cho file này
+
+```bash
+cd Downloads
+~/Downloads$ sudo chmod u+x ./kafka_2.13-3.8.0.tgz
+~/Downloads$ sudo tar -xzvf ./kafka_2.13-3.8.0.tgz
+```
+
+### Flow
+
 Producer Consumer Flow như sau:
 
 1. Start Zookeeper
