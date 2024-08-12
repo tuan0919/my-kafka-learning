@@ -250,3 +250,57 @@ Kết quả sau khi chạy thành công:
 ![image](images/Screenshot%20from%202024-08-13%2000-52-18.png)
 
 > Default port của Kafka là **9092**
+
+### Tạo Topic
+
+Tiếp theo, chúng ta sẽ tiến hành tạo một Topic, cũng thông qua **CLI**
+
+File chúng ta cần phải chạy lần này là `bin/kafka-topics.sh`, ngoài ra cung cấp thêm một số tham số khi chạy, bao gồm:
+
+- `--bootstrap-server`: localhost:9092
+- `--create --topic`: paytm-topic
+- `--partitions`: 3 _(giả sử chúng ta chỉ cần 3 partitons cho topic này)._
+- `--replication-factor`: 1
+
+> Chúng ta không cần nhớ các command này, chỉ cần hiểu.
+
+Câu lệnh đầy đủ là:
+
+```sh
+$ bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic paytm-topic --partitions 3 --replication-factor 1
+```
+
+Kết quả:
+
+```sh
+Created topic paytm-topic.
+```
+
+Để liệt kê các topic có trong kafka server, chúng ta dùng lệnh:
+
+```sh
+$ bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+```
+
+Kết quả như sau:
+
+```sh
+message
+paytm-topic
+```
+
+Giả sử ta cần coi cụ thể thông tin topic `paytm-topic`:
+
+```sh
+$ bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic paytm-topic
+```
+
+Kết quả trả về:
+
+```bash
+[2024-08-13 00:12:27,203] WARN [AdminClient clientId=adminclient-1] The DescribeTopicPartitions API is not supported, using Metadata API to describe topics. (org.apache.kafka.clients.admin.KafkaAdminClient)
+Topic: paytm-topic	TopicId: fSXfyQM0RzG2emQ_znnOLA	PartitionCount: 3	ReplicationFactor: 1	Configs:
+	Topic: paytm-topic	Partition: 0	Leader: 0	Replicas: 0	Isr: 0	Elr: N/A	LastKnownElr: N/A
+	Topic: paytm-topic	Partition: 1	Leader: 0	Replicas: 0	Isr: 0	Elr: N/A	LastKnownElr: N/A
+	Topic: paytm-topic	Partition: 2	Leader: 0	Replicas: 0	Isr: 0	Elr: N/A	LastKnownElr: N/A
+```
