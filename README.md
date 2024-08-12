@@ -220,3 +220,15 @@ Producer Consumer Flow như sau:
 5. Xác định số lượng replication factor cho server Kafka (tức số lượng Broker, thường là 1)
 
 ![image](images/Screenshot%20from%202024-08-12%2023-57-19.png)
+
+### Start ZooKeeper
+
+Để chạy server ZooKeeper, chúng ta vào chạy file `bin/zookeeper-server-start.sh`, để chạy file này, chúng ta cần chỉ định file cấu hình cho nó, các file `.properties` được đặt trong thư thự mục `config/`
+
+```sh
+$ bin/zookeeper-server-start.sh config/zookeeper.properties
+```
+
+Kết quả khi chạy thành công:
+
+![image](images/Screenshot%20from%202024-08-13%2000-36-18.png)
