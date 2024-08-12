@@ -210,3 +210,13 @@ Trước đây chúng ta phải lưu giữ metadata của Kafka Cluster bên tro
 Để sử dụng Kafka mà không cần ZooKeeper, chúng ta sẽ chạy Kafka ở **KRaft mode**.
 
 ## Playing with Kafka CLI
+
+Producer Consumer Flow như sau:
+
+1. Start Zookeeper
+2. Start Kafka Server
+3. Tạo Topic
+4. Sau khi tạo xong Topic thì cần xác định n số lượng partitions.
+5. Xác định số lượng replication factor cho server Kafka (tức số lượng Broker, thường là 1)
+
+![image](images/Screenshot%20from%202024-08-12%2023-57-19.png)
