@@ -211,6 +211,8 @@ Trước đây chúng ta phải lưu giữ metadata của Kafka Cluster bên tro
 
 ## Playing with Kafka CLI
 
+Trong Section này sẽ sử dụng các phiên bản phân phối cho **Linux Ubuntu**.
+
 Producer Consumer Flow như sau:
 
 1. Start Zookeeper
@@ -232,3 +234,19 @@ $ bin/zookeeper-server-start.sh config/zookeeper.properties
 Kết quả khi chạy thành công:
 
 ![image](images/Screenshot%20from%202024-08-13%2000-36-18.png)
+
+> Port mặc định của ZooKeeper là **2181**
+
+### Start Kafka Server (Broker)
+
+Để chạy Kafka Server, chúng ta chạy file `bin/kafka-server-start.sh` và cũng giống như ZooKeeper, khi chạy chúng ta phải chỉ định cho nó một file cấu hình nằm trong thư mục `config/`. Câu lệnh đầy đủ như sau:
+
+```sh
+$ bin/kafka-server-start.sh config/server.properties
+```
+
+Kết quả sau khi chạy thành công:
+
+![image](images/Screenshot%20from%202024-08-13%2000-52-18.png)
+
+> Default port của Kafka là **9092**
