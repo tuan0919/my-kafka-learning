@@ -320,3 +320,44 @@ Topic: paytm-topic	TopicId: fSXfyQM0RzG2emQ_znnOLA	PartitionCount: 3	Replication
 	Topic: paytm-topic	Partition: 1	Leader: 0	Replicas: 0	Isr: 0	Elr: N/A	LastKnownElr: N/A
 	Topic: paytm-topic	Partition: 2	Leader: 0	Replicas: 0	Isr: 0	Elr: N/A	LastKnownElr: N/A
 ```
+
+### Producer & Consumer & Broker on hands Example
+
+#### Producer
+
+Mở một terminal khác, chạy file `bin/kafka-console-producer.sh` kèm theo các tham số sau:
+
+- `--broker-list`: localhost:9092
+- `--topic`: paytm-topic
+
+```sh
+$ bin/kafka-console-producer.sh --broker-list localhost:9092 --topic paytm-topic
+```
+
+Lúc này, terminal này đóng vai trò là một Produce và có thể gửi message topic `paytm-topic` trên broker Kafka Server `localhost:9092`
+
+![image](images/Screenshot%20from%202024-08-13%2023-03-17.png)
+
+#### Consumer
+
+Mở một terminal khác, chạy file `bin/kafka-console-consumer.sh` kèm theo các tham số sau:
+
+- `--bootstrap-server`: localhost:9092
+- `--topic`: paytm-topic
+- `--from-beginning`
+
+```sh
+$ bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic paytm-topic --from-beginning
+```
+
+Terminal này lúc này đóng vai trò là một consumer, và đang lắng nghe topic `paytm-topic` của kafka server có địa chỉ `localhost:9092`, tất cả các message có trong broker sẽ được truyền đến consumer.
+
+![image](images/Screenshot%20from%202024-08-13%2022-56-28.png)
+
+#### Broker
+
+Để xem rõ hơn về cách mà data được lưu trữ bên trong Kafka Cluster, chúng ta sử dụng Offset Exlorer (tải [offsetexplorer.sh](https://www.kafkatool.com/download3/offsetexplorer.sh)), sau đó kết nối đến server Kafka và server ZooKeeper như sau:
+
+![image](images/Screenshot%20from%202024-08-13%2021-40-14.png)
+
+![image](images/Screenshot%20from%202024-08-13%2023-11-39.png)
