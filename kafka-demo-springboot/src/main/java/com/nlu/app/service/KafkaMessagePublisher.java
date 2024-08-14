@@ -38,7 +38,7 @@ public class KafkaMessagePublisher {
                 .transactionID(uuid)
                 .username(request.getUsername())
                 .build();
-        template.send("paytm-topic-1", dto)
+        template.send("paytm-topic-1", 1, null, dto)
                 .whenComplete((resp, ex) ->{
                     if (ex == null) {
                         System.out.println("Payment sent successfully.");
