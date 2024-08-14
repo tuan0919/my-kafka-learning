@@ -501,3 +501,41 @@ public class KafkaMessageListener {
 ```
 
 ### Object Serialize & Deserialize
+
+Để truyền tải cấu trúc Object (hay DTO) qua Kafka, chúng ta cần phải định nghĩa Serialize và Deserialize cho nó, bởi vì mặc định Kafka sẽ chỉ mặc định sử dụng Serialize message dưới dạng ByteArray và cũng Deserialize message dưới dạng ByteArary thay vì JSON String
+
+Định nghĩa file `application.yaml` như sau:
+
+**Ở SpringBoot Producer**:
+
+```yaml
+server:
+  port: 9191
+
+spring:
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+```
+
+**Tuơng ứng bên SpringBoot Consumer**:
+
+```yaml
+server:
+  port: 9292
+
+spring:
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: paytm-group-1
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: com.nlu.app.dto.kafka
+```
