@@ -435,26 +435,26 @@ public class KafkaMessagePublisher {
 File `/com.nlu.app/service/EventController.java`:
 
 ```java
-@Service
-public class KafkaMessagePublisher {
-    final KafkaTemplate<String, Object> template;
+@RestController
+@RequestMapping("/producer-app")
+public class EventController {
+    private KafkaMessagePublisher publisher;
 
-    public KafkaMessagePublisher(KafkaTemplate<String, Object> template) {
-        this.template = template;
+    @Autowired
+    public void setPublisher(KafkaMessagePublisher publisher) {
+        this.publisher = publisher;
     }
 
-    public void sendMessageToTopic(String message) {
-        CompletableFuture<SendResult<String, Object>> result =
-                template.send("paytm-topic", message);
-        result.whenComplete((resp, ex) -> {
-            if (ex == null) {
-                System.out.println("Message sent successfully.");
-                System.out.println("Sent msg = [" + message + "] with offset = ["
-                        + resp.getRecordMetadata().offset()+"]");
-            } else {
-                System.err.println("Error sending message: " + ex.getMessage());
-            }
-        });
+    @GetMapping("/publish/{message}")
+    public ResponseEntity<?> publishMessage(@PathVariable String message) {
+        try {
+            publisher.sendMessageToTopic(message);
+            return ResponseEntity.ok("message published successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("something went wrong :(");
+        }
+
     }
 }
 ```
