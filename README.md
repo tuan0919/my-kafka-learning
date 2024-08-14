@@ -586,3 +586,5 @@ public void consume (PayTMStatusDTO status) {
 ```
 
 > Consumer này giờ đây sẽ chỉ lắng nghe partition-1 cho topic "paytm-topic-1"
+
+Ngoài ra, nếu như chúng ta không muốn chỉ định parition chứa message thông qua số định adnh cụ thể, mà vẫn muốn đảm bảo đọc được message cần thiết, ta có thể sử dụnng _Partitons Key_. Khi chỉ định key thì hệ thống sẽ căn cứ vào hàm băm `hashCode()` của key đó để xác định partition, cơ chế này hoạt động lương tự như các cấu trúc dữ liệu hashMap hay hashSet.
