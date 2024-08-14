@@ -543,3 +543,46 @@ spring:
 Với thiết lập trên, giờ đây Producer và Consumer có thể tiến hành truyền tải dữ liệu DTO dưới dạng JSON
 
 > **Chú ý quan trọng**: DTO bắt buộc phải có Constructor không tham số thì mới có thể convert được
+
+## Message Routing with specific Partition
+
+Cho đến hiện tại, chúng ta không can thiệp vào việc phân phối message vào partition, điều này khiến cho khi chúng ta gửi một lượng lớn message, thì chúng sẽ phân phối một cách ngẫu nhiên vào các partition. Việc này là do chúng ta không xác định partition cho các message này và để cho Kafka tự quyết định.
+
+Trong một số trường hợp, có những lúc chúng ta muốn xác định cụ thể message sẽ được đặt ở Partition nào trong topic.
+
+Để làm được như vậy, chúng ta chỉ việc chỉ định thêm tham số partition number cho hàm `KafkaTemplate#.send()` ở **Producer** như sau:
+
+```java
+public void createPayment(PaymentCreationRequest request) {
+    String uuid = UUID.randomUUID().toString();
+    var dto = PayTMStatusDTO.builder()
+            .isPay(request.getIsPay())
+            .transactionID(uuid)
+            .username(request.getUsername())
+            .build();
+    template.send("paytm-topic-1", 1, null, dto)
+            .whenComplete((resp, ex) ->{
+                if (ex == null) {
+                    System.out.println("Payment sent successfully.");
+                    System.out.println("Sent payment = [" + dto + "] with offset = ["
+                            + resp.getRecordMetadata().offset()+"]");
+                } else {
+                    System.err.println("Error sending payment: " + ex.getMessage());
+                }
+            });
+}
+```
+
+> Tham số null là _key_ của partition, chúng ta sẽ bàn đến khái niệm partition key sau.
+
+Và ở **Consumer**, để chỉ định Consumer này sẽ lắng nghe message từ một partition chỉ định thay vì tất cả parition (hoặc partition ngẫu nhiên do Kafka chỉ định) thì chúng ta thiết lập thêm tham số **topicPartitions** cho annotation `@KafkaListener` như sau:
+
+```java
+@KafkaListener(topics = {"paytm-topic-1"}, topicPartitions = {
+        @TopicPartition(topic = "paytm-topic-1", partitions = "1")})
+public void consume (PayTMStatusDTO status) {
+    log.info("Consumer consume status {}", status);
+}
+```
+
+> Consumer này giờ đây sẽ chỉ lắng nghe partition-1 cho topic "paytm-topic-1"
