@@ -428,7 +428,9 @@ public class KafkaMessagePublisher {
 }
 ```
 
-> **KafkaTemplate** là một phần của Spring Kafka, cung cấp một cách tiện lợi để gửi và nhận tin nhắn đến các chủ đề Kafka.
+> - **KafkaTemplate** là một phần của Spring Kafka, cung cấp một cách tiện lợi để gửi và nhận tin nhắn đến các chủ đề Kafka.
+> - Kết quả trả về của hàm send là một CompletableFuture, chúng ta có thể block thread của nó để biến code của hàm sendMessageToTopic trở thành code đồng bộ.
+> - Best practice là chúng ta nên code theo hướng bất đồng bộ, bằng cách truyền callback vào hàm .whenComplete(...) của một CompletableFuture.
 
 File `/com.nlu.app/service/EventController.java`:
 
@@ -459,4 +461,8 @@ public class KafkaMessagePublisher {
 
 Với cách thiết lập Kafka Server và SpringBoot này, bây giờ, để publish một message chúng ta sẽ request đến endpoint `http:localhost:9191/producer-app/pubhlish/{message}` để gửi message.
 
+![image](images/Screenshot%20from%202024-08-14%2016-19-44.png)
+
 Sau Đó các Consumer đang lắng nghe tương ứng sẽ nhận được message vừa gửi.
+
+![image](images/Screenshot%20from%202024-08-14%2016-22-29.png)
