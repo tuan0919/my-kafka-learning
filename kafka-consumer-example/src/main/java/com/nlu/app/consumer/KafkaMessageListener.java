@@ -4,6 +4,7 @@ import com.nlu.app.dto.kafka.PayTMStatusDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.TopicPartition;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,7 +16,8 @@ public class KafkaMessageListener {
 //        log.info("Consumer consume message {}", message);
 //    }
 
-    @KafkaListener(topics = {"paytm-topic-1"})
+    @KafkaListener(topics = {"paytm-topic-1"}, topicPartitions = {
+            @TopicPartition(topic = "paytm-topic-1", partitions = "1")})
     public void consume (PayTMStatusDTO status) {
         log.info("Consumer consume status {}", status);
     }
