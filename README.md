@@ -375,3 +375,88 @@ Terminal này lúc này đóng vai trò là một consumer, và đang lắng ngh
 ![image](images/Screenshot%20from%202024-08-13%2021-40-14.png)
 
 ![image](images/Screenshot%20from%202024-08-13%2023-11-39.png)
+
+## Connect Kafka Server with Spring Boot
+
+Để có thể kết nối server Kafka với dự án Spring Boot, chúng ta cài dependency sau:
+
+```xml
+<dependency>
+  <groupId>org.springframework.kafka</groupId>
+  <artifactId>spring-kafka</artifactId>
+</dependency>
+```
+
+### Xây dựng Producer Service
+
+Cấu hình producer trong `application.yaml`:
+
+```yaml
+server:
+  port: 9191
+
+spring:
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+```
+
+File `/com.nlu.app/service/KafkaMessagePublisher.java`:
+
+```java
+@Service
+public class KafkaMessagePublisher {
+    final KafkaTemplate<String, Object> template;
+
+    public KafkaMessagePublisher(KafkaTemplate<String, Object> template) {
+        this.template = template;
+    }
+
+    public void sendMessageToTopic(String message) {
+        CompletableFuture<SendResult<String, Object>> result =
+                template.send("paytm-topic", message);
+        result.whenComplete((resp, ex) -> {
+            if (ex == null) {
+                System.out.println("Message sent successfully.");
+                System.out.println("Sent msg = [" + message + "] with offset = ["
+                        + resp.getRecordMetadata().offset()+"]");
+            } else {
+                System.err.println("Error sending message: " + ex.getMessage());
+            }
+        });
+    }
+}
+```
+
+> **KafkaTemplate** là một phần của Spring Kafka, cung cấp một cách tiện lợi để gửi và nhận tin nhắn đến các chủ đề Kafka.
+
+File `/com.nlu.app/service/EventController.java`:
+
+```java
+@Service
+public class KafkaMessagePublisher {
+    final KafkaTemplate<String, Object> template;
+
+    public KafkaMessagePublisher(KafkaTemplate<String, Object> template) {
+        this.template = template;
+    }
+
+    public void sendMessageToTopic(String message) {
+        CompletableFuture<SendResult<String, Object>> result =
+                template.send("paytm-topic", message);
+        result.whenComplete((resp, ex) -> {
+            if (ex == null) {
+                System.out.println("Message sent successfully.");
+                System.out.println("Sent msg = [" + message + "] with offset = ["
+                        + resp.getRecordMetadata().offset()+"]");
+            } else {
+                System.err.println("Error sending message: " + ex.getMessage());
+            }
+        });
+    }
+}
+```
+
+Với cách thiết lập Kafka Server và SpringBoot này, bây giờ, để publish một message chúng ta sẽ request đến endpoint `http:localhost:9191/producer-app/pubhlish/{message}` để gửi message.
+
+Sau Đó các Consumer đang lắng nghe tương ứng sẽ nhận được message vừa gửi.
