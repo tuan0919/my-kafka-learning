@@ -539,3 +539,7 @@ spring:
             trusted:
               packages: com.nlu.app.dto.kafka
 ```
+
+Với thiết lập trên, giờ đây Producer và Consumer có thể tiến hành truyền tải dữ liệu DTO dưới dạng JSON
+
+> **Chú ý quan trọng**: DTO bắt buộc phải có Constructor không tham số thì mới có thể convert được
