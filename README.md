@@ -466,3 +466,38 @@ Với cách thiết lập Kafka Server và SpringBoot này, bây giờ, để pu
 Sau Đó các Consumer đang lắng nghe tương ứng sẽ nhận được message vừa gửi.
 
 ![image](images/Screenshot%20from%202024-08-14%2016-22-29.png)
+
+### Xây dựng Consumer Application
+
+Ngoài ra, chúng ta có thể xây dựng consumer application để consume các message thay vì sử dụng CLI như các ví dụ truớc đó.
+
+Trong section này, chúng ta sẽ xây dựng Consumer bằng Spring Boot. ([kafka-consumer-example](/kafka-consumer-example/))
+
+Cấu hình trong file `application.yaml`:
+
+```yaml
+server:
+  port: 9292
+
+spring:
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: paytm-group-1
+```
+
+File `com.nlu.app.consumer.KafkaMessageListener.java`:
+
+```java
+@Service
+public class KafkaMessageListener {
+    Logger log = LoggerFactory.getLogger(KafkaMessageListener.class);
+
+    @KafkaListener(topics = {"paytm-topic"})
+    public void consume(String message) {
+        log.info("Consumer consume message {}", message);
+    }
+}
+```
+
+### Object Serialize & Deserialize
