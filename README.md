@@ -227,6 +227,20 @@ cd Downloads
 ~/Downloads$ sudo tar -xzvf ./kafka_2.13-3.8.0.tgz
 ```
 
+### Cài đặt Docker Image
+
+Một cách khác để sử dụng là cài đặt các Docker Image của ZooKeeper và Kafka Server.
+
+[File Docker compose](./docker-compose.yaml)
+
+Sau khi cài đặt xong, sử dụng `docker exec -it <container_name> <command>` để sử dụng container
+
+Ví dụ:
+
+```sh
+$ docker exec -it kafka-container /bin/sh
+```
+
 ### Flow
 
 Producer Consumer Flow như sau:
