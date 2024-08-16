@@ -798,8 +798,14 @@ public void consumeEvents(User user, @Header(KafkaHeaders.RECEIVED_TOPIC) String
     } catch (JsonProcessingException e) {
         e.printStackTrace();
     }
+
+    @DltHandler
+    public void listenDLT(User user, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic, @Header(KafkaHeaders.OFFSET) long offset) {
+        log.info("DLT Received : {} , from {} , offset {}",user.getFirstName(),topic,offset);
+    }
 }
 ```
 
-> - restrictedIpList: để chứa các địa chỉ IP cho phép consume, giả sử có một IP lạ nằm trong message nhận được (_user.csv thực tế là có_) thì chương trình ném ra lỗi RuntimeException để ngăn chặn quá trình consume message này.
+> - restrictedIpList: để chứa các địa chỉ IP lạ không cho phép consume, giả sử có một IP lạ nằm trong message nhận được (_user.csv thực tế là có_) thì chương trình ném ra lỗi RuntimeException để ngăn chặn quá trình consume message này.
 > - @RetryableTopic(attempts = "4"): Định nghĩa cho Kafka biết rằng đối với Consumer này, chúng ta thực hiện retry 3 lần khi thất bại.
+> - @DltHandler: Dùng để đánh dấu method này sẽ được gọi khi một dead message được gửi đến DLT.

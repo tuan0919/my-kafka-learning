@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 public class KafkaMessageConsumer {
 
     @RetryableTopic(attempts = "4")// 3 topic N-1
-    @KafkaListener(topics = "${app.topic.name}", groupId = "javatechie-group")
+    @KafkaListener(topics = "${app.topic.name}", groupId = "error-handling-group")
     public void consumeEvents(User user, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic, @Header(KafkaHeaders.OFFSET) long offset) {
         try {
             log.info("Received: {} from {} offset {}", new ObjectMapper().writeValueAsString(user), topic, offset);
