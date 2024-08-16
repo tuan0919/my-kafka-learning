@@ -1,4 +1,4 @@
-package com.javatechie.dto;
+package com.nlu.app.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

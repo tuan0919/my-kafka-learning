@@ -1,6 +1,6 @@
-package com.javatechie.publisher;
+package com.nlu.app.publisher;
 
-import com.javatechie.dto.User;
+import com.nlu.app.dto.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;

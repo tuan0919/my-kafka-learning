@@ -1,8 +1,8 @@
-package com.javatechie.consumer;
+package com.nlu.app.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.javatechie.dto.User;
+import com.nlu.app.dto.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;

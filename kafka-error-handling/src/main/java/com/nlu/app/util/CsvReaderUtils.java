@@ -1,6 +1,6 @@
-package com.javatechie.util;
+package com.nlu.app.util;
 
-import com.javatechie.dto.User;
+import com.nlu.app.dto.User;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import org.springframework.core.io.ClassPathResource;

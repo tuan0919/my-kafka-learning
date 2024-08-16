@@ -1,8 +1,8 @@
-package com.javatechie.controller;
+package com.nlu.app.controller;
 
-import com.javatechie.dto.User;
-import com.javatechie.publisher.KafkaMessagePublisher;
-import com.javatechie.util.CsvReaderUtils;
+import com.nlu.app.dto.User;
+import com.nlu.app.publisher.KafkaMessagePublisher;
+import com.nlu.app.util.CsvReaderUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +21,9 @@ public class EventController {
     @PostMapping("/publishNew")
     public ResponseEntity<?> publishEvent(@RequestBody User user) {
         try {
-            List<User> users = CsvReaderUtils.readDataFromCsv();
-            users.forEach(usr -> publisher.sendEvents(usr));
+//            List<User> users = CsvReaderUtils.readDataFromCsv();
+//            users.forEach(usr -> publisher.sendEvents(usr));
+            publisher.sendEvents(user);
             return ResponseEntity.ok("Message published successfully");
         } catch (Exception exception) {
             return ResponseEntity.
