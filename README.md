@@ -588,3 +588,168 @@ public void consume (PayTMStatusDTO status) {
 > Consumer này giờ đây sẽ chỉ lắng nghe partition-1 cho topic "paytm-topic-1"
 
 Ngoài ra, nếu như chúng ta không muốn chỉ định parition chứa message thông qua số định adnh cụ thể, mà vẫn muốn đảm bảo đọc được message cần thiết, ta có thể sử dụnng _Partitons Key_. Khi chỉ định key thì hệ thống sẽ căn cứ vào hàm băm `hashCode()` của key đó để xác định partition, cơ chế này hoạt động lương tự như các cấu trúc dữ liệu hashMap hay hashSet.
+
+## Testing in SpringBoot with TestContainers
+
+Để test được logic chương trình, ngoài việc chạy trước ZooKeeper và Kafka (bằng CLI hoặc Docker Containers) để tạo môi trường, sau đó chạy riêng lẻ các chương trình Spring Boot để test. Thì chúng ta có thể tích hợp vào Spring Boot Test với Test Containers.
+
+Với cách tiếp cận này, chúng ta có thể test trực tiếp logic chương trình đã viết mà không cần phải quan tâm đến vấn đề khởi động môi trường, Spring Boot sẽ tự động khởi dộng các container tương ứng để tạo môi trường và xóa nó sau khi test xong.
+
+Dependencies:
+
+```xml
+<!-- Testcontainers Core -->
+<dependency>
+  <groupId>org.testcontainers</groupId>
+  <artifactId>testcontainers</artifactId>
+  <scope>test</scope>
+</dependency>
+<!-- Testcontainers cho Kafka -->
+<dependency>
+  <groupId>org.testcontainers</groupId>
+  <artifactId>kafka</artifactId>
+  <version>1.18.0</version>
+  <scope>test</scope>
+</dependency>
+<!-- Awaitility -->
+<dependency>
+  <groupId>org.awaitility</groupId>
+  <artifactId>awaitility</artifactId>
+  <version>4.2.0</version>
+  <scope>test</scope>
+</dependency>
+<!-- Testcontainers JUnit Jupiter Extension -->
+<dependency>
+  <groupId>org.testcontainers</groupId>
+  <artifactId>junit-jupiter</artifactId>
+  <version>1.18.1</version>
+  <scope>test</scope>
+</dependency>
+```
+
+### Test Producer
+
+File `src/test/java/com.nlu.app/KafkaDemoSpringbootApplicationTests.java`:
+
+```java
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Testcontainers
+class KafkaDemoSpringbootApplicationTests {
+	@Container
+	static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:latest"));
+
+	@DynamicPropertySource
+	public static void initKafkaProperties(DynamicPropertyRegistry registry) {
+		registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
+	}
+
+	private KafkaMessagePublisher publisher;
+
+	@Autowired
+	public void setPublisher(KafkaMessagePublisher publisher) {
+		this.publisher = publisher;
+	}
+
+	@Test
+	public void testSendEventToTopic() {
+		var request = PaymentCreationRequest.builder()
+						.isPay(true).username("test-user")
+						.build();
+		publisher.createPayment(request);
+		await().pollInterval(Duration.ofSeconds(3))
+				.atMost(Duration.ofSeconds(10))
+				.untilAsserted(() -> {
+					// assert message sent successfully to Kafka topic
+				});
+	}
+}
+```
+
+Ngoài ra, bởi vì môi trường test đang setting ở random port, thế nên khi Spring Boot cố gắng đọc file `application.yaml` ở đường dẫn `src/main/resources/application.yaml` sẽ khiến cho test case bị lỗi, vì trong `application.yaml` đang fix cứng thông tin `spring.kafka.bootstrap-servers` là `localhost:9092`.
+
+`src/main/resources/application.yaml`:
+
+```yaml
+server:
+  port: 9191
+
+spring:
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+```
+
+Để override lại hành vi này, chúng ta tạo thêm một file tương tự ở đường dẫn `src/test/resources/application.yaml`:
+
+```yaml
+spring:
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+```
+
+Chạy test case `testSendEventToTopic()` thì kết quả nhận được:
+
+![alt](images/Screenshot%20from%202024-08-16%2018-08-36.png)
+
+### Test Consumer
+
+File `src/test/java/com/nlu/app/KafkaConsumerExampleApplicationTests.java`:
+
+```java
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Testcontainers
+@Slf4j
+class KafkaConsumerExampleApplicationTests {
+    @Container
+    static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:latest"));
+
+    @DynamicPropertySource
+    public static void initKafkaProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
+    }
+
+    private KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Autowired
+    public void setKafkaTemplate(KafkaTemplate<String, Object> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    @Test
+    public void testConsume() {
+        log.info("Waiting for Kafka message...");
+        var request = PayTMStatusDTO.builder()
+                        .isPay(true).transactionID("sadsadas")
+                        .username("nqat0919").build();
+        kafkaTemplate.send("paytm-topic-1", request);
+        log.info("method executed");
+    }
+}
+```
+
+File `src/test/resources/application.yaml`:
+
+```yaml
+spring:
+  kafka:
+    consumer:
+      group-id: paytm-group-1
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: com.nlu.app.dto.kafka
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+```
+
+Kết quả sau khi test như sau:
+
+![img](images/Screenshot%20from%202024-08-16%2019-18-20.png)
