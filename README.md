@@ -753,3 +753,53 @@ spring:
 Kết quả sau khi test như sau:
 
 ![img](images/Screenshot%20from%202024-08-16%2019-18-20.png)
+
+## Error Handling & Retry Strategies
+
+Trong section này, chúng ta sẽ sử dụng project [kafka-error-handling](./kafka-error-handling/) để test.
+
+Trên thực tế, khi **Publisher** gửi message vào **Broker**, sẽ có trường hợp **Consumer** khi đó đang bị down hoặc đang trong trạng thái không thể consume được message (do database liên quan không kết nối được, vv...). Khi đó, chúng ta sẽ muốn đảm bảo không mất mát bất kì message nào và cố gắng handle các message bị gửi thất bại trong quá trình này.
+
+![image](images/Screenshot%20from%202024-08-16%2020-22-31.png)
+
+Để thực hiện điều này, chúng ta sẽ yêu cầu Kafka retry một vài lần khi không gửi message thành công, và nều số lần retry vượt quá dự định, Kafka sẽ đặt message này vào **DLT - Dead Letter Topics**, là các topics dùng để chứa các message bị gửi thất bại.
+
+Với các DLT này, chúng ta có danh sách các message bị gửi thất bại một cách tuần tự và nhờ đó, có thể phân tích và tiến hành xử lí mà vẫn đảm bảo không message nào bị sót.
+
+![img](images/Screenshot%20from%202024-08-16%2020-38-32.png)
+
+### Ví dụ
+
+Xem xét ví dụ cấu trúc project:
+
+![img](images/Screenshot%20from%202024-08-16%2021-01-49.png)
+
+- `config/`: Định nghĩa topic mới.
+- `consumer/`: Consumer của hệ thống.
+- `controller/`: Endpoint của publisher.
+- `dto/`: DTO classes.
+- `publisher/`: Publisher của hệ thống.
+- `util/`: Chứa helper method dùng để đọc file `user.csv`.
+
+Trong đó, chúng ta cần chú ý logic trong `consumer/` như sau:
+
+```java
+@RetryableTopic(attempts = "4")// 3 topic N-1
+@KafkaListener(topics = "${app.topic.name}", groupId = "javatechie-group")
+public void consumeEvents(User user, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic, @Header(KafkaHeaders.OFFSET) long offset) {
+    try {
+        log.info("Received: {} from {} offset {}", new ObjectMapper().writeValueAsString(user), topic, offset);
+        //validate restricted IP before process the records
+        List<String> restrictedIpList = Stream.of("32.241.244.236", "15.55.49.164", "81.1.95.253", "126.130.43.183").collect(Collectors.toList());
+        if (restrictedIpList.contains(user.getIpAddress())) {
+            throw new RuntimeException("Invalid IP Address received !");
+        }
+
+    } catch (JsonProcessingException e) {
+        e.printStackTrace();
+    }
+}
+```
+
+> - restrictedIpList: để chứa các địa chỉ IP cho phép consume, giả sử có một IP lạ nằm trong message nhận được (_user.csv thực tế là có_) thì chương trình ném ra lỗi RuntimeException để ngăn chặn quá trình consume message này.
+> - @RetryableTopic(attempts = "4"): Định nghĩa cho Kafka biết rằng đối với Consumer này, chúng ta thực hiện retry 3 lần khi thất bại.
