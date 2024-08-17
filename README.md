@@ -809,3 +809,29 @@ public void consumeEvents(User user, @Header(KafkaHeaders.RECEIVED_TOPIC) String
 > - restrictedIpList: để chứa các địa chỉ IP lạ không cho phép consume, giả sử có một IP lạ nằm trong message nhận được (_user.csv thực tế là có_) thì chương trình ném ra lỗi RuntimeException để ngăn chặn quá trình consume message này.
 > - @RetryableTopic(attempts = "4"): Định nghĩa cho Kafka biết rằng đối với Consumer này, chúng ta thực hiện retry 3 lần khi thất bại.
 > - @DltHandler: Dùng để đánh dấu method này sẽ được gọi khi một dead message được gửi đến DLT.
+
+## Schema Registry
+
+Trong hệ thống Kafka, yêu cầu phải có sự đồng bộ về cấu trúc message được truyền tải giữa Producer và Consumer, việc này đôi khi là một khó khăn khi mà đôi khi, một Producer có thể thay đổi cấu trúc message, khi đó chúng ta phải **cập nhật một cách thủ công** các class DTO tương ứng để có nhận được message từ Producer.
+
+**Schema Registry** sinh ra để giải quyết vấn đề này.
+
+### Avro Schema
+
+Hiểu một cách đơn giản là một định dạng dữ liệu được quy định ra để kết nối message giữa Producer và Consumer với nhau.
+
+![img](images/Screenshot%20from%202024-08-17%2016-44-41.png)
+
+Khi có một thay đổi gì xảy ra với Schema, nó sẽ đc xem là _phiên bản mới_ của schema đó, quá trình này gọi là **Schema Evolution**.
+
+Vậy cách dùng nó như thế nào?
+
+- Khi chúng ta có một cấu trúc schema, chúng ta sẽ **generate** ra được một Object dựa vào schema đó. Gọi là **Avbro Object**.
+- Để thực hiện quá trình convert một schema thành Avbro Object, chúng ta có thể sử dụng Avro Tool Maven Plugin. Việc này sẽ sinh ra các class `.java` tương ứng.
+- Để gửi schema vào server Kafka, chúng ta sử dụng **Avro Serializer** của kafka để mã hóa object cần truyền tải ở phía **Producer**.
+- Và ở chiều ngược lại, để đọc được raw bytes từ message, chúng ta sử dụng trình giải mã của Kafka là **Avro Deserializer** ở phía **Consumer**.
+- Để kiểm tra tính đúng đắn về **version** hiện tại của Schema và để giúp phía **Consumer** có thể deserializer raw bytes thành object mà không cần biết Schema, đây là vai trò của Schema Registry.
+- Vai trò của Schema Registry là **lưu trữ schema**, khi mà Avbro Serializer serialize một record, nó sẽ validate và **lưu schema vào Registry**. Và khi Avbro Deserializer deserialize raw bytes, nó sẽ validate là **lấy schema từ Registry** và dựa vào đó để convert raw bytes thành object.
+- Với cách tiếp cận này, khi chúng ta cập nhật một schema, nó sẽ tạo ra một phiên bản mới và lưu vào schema registry.
+
+![img](images/Screenshot%20from%202024-08-17%2016-59-04.png)
