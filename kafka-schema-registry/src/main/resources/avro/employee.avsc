@@ -1,0 +1,13 @@
+{
+  "namespace": "com.nlu.app.dto",
+  "type": "record",
+  "name": "Employee",
+  "fields": [
+    {"name": "id", "type": "string"},
+    {"name": "firstName", "type": "string"},
+    {"name": "lastName", "type": "string"},
+    {"name": "email", "type": "string", "default": null},
+    {"name": "dob", "type": "string"},
+    {"name":  "age", "type": "string"}
+  ]
+}
