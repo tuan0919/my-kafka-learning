@@ -835,3 +835,78 @@ Vậy cách dùng nó như thế nào?
 - Với cách tiếp cận này, khi chúng ta cập nhật một schema, nó sẽ tạo ra một phiên bản mới và lưu vào schema registry.
 
 ![img](images/Screenshot%20from%202024-08-17%2016-59-04.png)
+
+### Ví dụ
+
+Trong section này, chúng ta sử dụng project **[kafka-schema-registry](./kafka-schema-registry/)**
+
+Các dependency liên quan trong file `pom.xml`:
+
+```xml
+<!-- https://mvnrepository.com/artifact/io.confluent/kafka-avro-serializer -->
+<dependency>
+  <groupId>io.confluent</groupId>
+  <artifactId>kafka-avro-serializer</artifactId>
+  <version>7.7.0</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/io.confluent/kafka-schema-registry-client -->
+<dependency>
+  <groupId>io.confluent</groupId>
+  <artifactId>kafka-schema-registry-client</artifactId>
+  <version>7.7.0</version>
+</dependency>
+
+
+<!-- https://mvnrepository.com/artifact/org.apache.avro/avro -->
+<dependency>
+  <groupId>org.apache.avro</groupId>
+  <artifactId>avro</artifactId>
+  <version>1.12.0</version>
+</dependency>
+
+<!--build -> plugins -->
+
+<plugin>
+  <groupId>org.apache.avro</groupId>
+  <artifactId>avro-maven-plugin</artifactId>
+  <version>1.8.2</version>
+  <executions>
+    <execution>
+      <id>schemas</id>
+      <phase>generate-sources</phase>
+      <goals>
+        <goal>schema</goal>
+      </goals>
+      <configuration>
+        <sourceDirectory>${project.basedir}/src/main/resources/</sourceDirectory>
+        <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+      </configuration>
+    </execution>
+  </executions>
+</plugin>
+```
+
+File `employee.avsc`
+
+```json
+{
+  "namespace": "com.nlu.app.dto",
+  "type": "record",
+  "name": "Employee",
+  "fields": [
+    { "name": "id", "type": "string" },
+    { "name": "firstName", "type": "string" },
+    { "name": "lastName", "type": "string" },
+    { "name": "email", "type": "string", "default": null },
+    { "name": "dob", "type": "string" },
+    { "name": "age", "type": "string" }
+  ]
+}
+```
+
+Từ file này, avro sẽ build ra được class `com/nlu/app/dto/Employee.java` như sau:
+
+![img](images/Screenshot%20from%202024-08-17%2018-09-45.png)
+
+Khi chạy project, producer sẽ bắt đầu đặt schema của Employee lên trên Schema Registry, sau đó ở lần sau, một application khác đóng vai trò là Consumer sẽ có thể lấy thông tin schema từ registry đó và tự động tạo ra Employee class tương ứng.
